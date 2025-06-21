@@ -128,4 +128,4 @@ Este projeto é distribuído sob a **GPL-3.0 license**. Veja o arquivo `LICENSE`
 <br>
 🔗 LinkedIn: [br.linkedin.com/in/carloshenriquetourinhosantana](https://br.linkedin.com/in/carloshenriquetourinhosantana)  
 <br>
-🔗 GitHub: [github.com/henriquetourinho](https://github.com/henriquetourinho). fale para o webdesign, o que ele tem que fazer num site de apresentação e tal.; tiudo que ele debe coplocar. a tudo deve ficar em index.html. 
+🔗 GitHub: [github.com/henriquetourinho](https://github.com/henriquetourinho)

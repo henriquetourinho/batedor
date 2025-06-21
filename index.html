@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batedor - Monitoramento Profissional de Sistemas em Go</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset e Variáveis */
+    :root {
+      --bg-dark: #121212;
+      --bg-card: #1e1e1e;
+      --primary: #00c6ff;
+      --secondary: #0072ff;
+      --accent: #ff4d4d;
+      --text: #e0e0e0;
+      --text-light: #a0a0a0;
+      --success: #00c853;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    /* Header */
+    header {
+      background-color: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(10px);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .tagline {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    
+    .badges {
+      display: flex;
+      gap: 0.8rem;
+    }
+    
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      background-color: rgba(0, 198, 255, 0.1);
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    /* Container Principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 7rem 2rem 3rem;
+    }
+    
+    /* Seções */
+    section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 6rem;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+    
+    /* Sobre o Projeto */
+    .about {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .about p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+    
+    .highlight {
+      background-color: rgba(0, 198, 255, 0.1);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      margin: 1.5rem 0;
+    }
+    
+    /* Demonstração */
+    .demo-container {
+      background-color: var(--bg-card);
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-gif {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Instalação */
+    .installation-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .step {
+      background-color: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .step h3 {
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+    
+    pre {
+      background-color: #1a1a1a;
+      padding: 1rem;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-top: 1rem;
+    }
+    
+    /* Funcionalidades */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .feature-card {
+      background-color: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-top: 0.3rem;
+    }
+    
+    .feature-content h3 {
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-content p {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    
+    /* Atalhos */
+    .shortcuts-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--bg-card);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .shortcuts-table th, 
+    .shortcuts-table td {
+      padding: 1rem;
+      text-align: left;
+    }
+    
+    .shortcuts-table th {
+      background-color: rgba(0, 198, 255, 0.1);
+      color: var(--primary);
+    }
+    
+    .shortcuts-table tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    .shortcuts-table code {
+      background-color: rgba(0, 198, 255, 0.1);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      color: var(--primary);
+      font-family: 'Courier New', monospace;
+    }
+    
+    /* Segurança */
+    .security-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .security-card {
+      background-color: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .security-icon {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    
+    /* Doação */
+    .donation {
+      background: linear-gradient(135deg, rgba(0, 198, 255, 0.1), rgba(0, 114, 255, 0.1));
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid rgba(0, 198, 255, 0.2);
+      margin: 2rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .donation::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="2"/></svg>');
+    }
+    
+    .donation h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+    
+    .donation p {
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .pix-code {
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 1.5rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      word-break: break-all;
+      margin: 1rem auto;
+      max-width: 500px;
+      border: 1px dashed var(--primary);
+      position: relative;
+    }
+    
+    .pix-code::after {
+      content: "PIX";
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      background-color: var(--bg-dark);
+      padding: 0 10px;
+      font-size: 0.8rem;
+      color: var(--primary);
+    }
+    
+    .donation-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.5rem;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      margin-top: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+    }
+    
+    .donation-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 198, 255, 0.4);
+    }
+    
+    /* Autor */
+    .author-profile {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      background-color: var(--bg-card);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .author-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+    
+    .author-info h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .author-location {
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .social-links a {
+      color: var(--text);
+      font-size: 1.5rem;
+      transition: color 0.3s ease;
+    }
+    
+    .social-links a:hover {
+      color: var(--primary);
+    }
+    
+    /* Rodapé */
+    footer {
+      background-color: var(--bg-card);
+      padding: 2rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    
+    .footer-links a {
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    
+    .license {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    
+    /* Botões */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.2rem;
+      background-color: rgba(0, 198, 255, 0.1);
+      color: var(--primary);
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 198, 255, 0.3);
+    }
+    
+    .btn:hover {
+      background-color: rgba(0, 198, 255, 0.2);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+      
+      .badges {
+        justify-content: center;
+      }
+      
+      .container {
+        padding-top: 9rem;
+      }
+      
+      .author-profile {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .social-links {
+        justify-content: center;
+      }
+      
+      .section-title {
+        font-size: 1.7rem;
+      }
+      
+      .footer-links {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <h1>Batedor</h1>
+    </div>
+    <div class="tagline">Monitoramento Profissional de Sistemas em Go</div>
+    <div class="badges">
+      <span class="badge">v1.0</span>
+      <span class="badge">GPL-3.0</span>
+      <span class="badge">Linux</span>
+    </div>
+  </header>
+  
+  <div class="container">
+    <!-- Sobre -->
+    <section id="about">
+      <h2 class="section-title">O que é o Batedor?</h2>
+      <div class="about">
+        <p>O Batedor é uma ferramenta de monitoramento em tempo real para sistemas Linux, desenvolvida em Go. Ele combina uma interface TUI moderna com um painel Web opcional, oferecendo monitoramento abrangente com histórico persistente em banco SQLite.</p>
+        
+        <div class="highlight">
+          <p>Ferramenta profissional para sysadmins, devops e entusiastas que precisam de monitoramento detalhado sem complicações.</p>
+        </div>
+        
+        <div class="btn-group">
+          <a href="https://github.com/henriquetourinho/batedor" class="btn" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+          <a href="#installation" class="btn">
+            <i class="fas fa-download"></i> Instalação
+          </a>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Demonstração -->
+    <section id="demo">
+      <h2 class="section-title">Demonstração</h2>
+      <div class="demo-container">
+        <img src="https://github.com/henriquetourinho/batedor/blob/main/media/funcionamento.gif?raw=true" alt="Demonstração do Batedor" class="demo-gif">
+        <p>Funcionamento ao vivo do Batedor com TUI e modo Web simultâneo.</p>
+      </div>
+    </section>
+    
+    <!-- Instalação -->
+    <section id="installation">
+      <h2 class="section-title">Instalação</h2>
+      <div class="installation-steps">
+        <div class="step">
+          <h3>Pré-requisitos</h3>
+          <p>Certifique-se de ter os seguintes pacotes instalados:</p>
+          <pre>sudo apt update && sudo apt install git golang build-essential dmidecode</pre>
+        </div>
+        
+        <div class="step">
+          <h3>Instalação</h3>
+          <p>Clone o repositório e compile o projeto:</p>
+          <pre># Clone o repositório
+git clone https://github.com/henriquetourinho/batedor.git
+cd batedor
+
+# Instale as dependências
+go mod download
+
+# Compile e instale
+go build -o batedor
+sudo cp batedor /usr/local/bin/</pre>
+        </div>
+        
+        <div class="step">
+          <h3>Execução</h3>
+          <p>Execute o Batedor nos diferentes modos:</p>
+          <pre># Modo TUI (terminal)
+batedor
+
+# Modo Web (disponível na porta 8080)
+batedor --web</pre>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Funcionalidades -->
+    <section id="features">
+      <h2 class="section-title">Recursos Profissionais</h2>
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-tachometer-alt"></i></div>
+          <div class="feature-content">
+            <h3>Monitoramento em Tempo Real</h3>
+            <p>CPU, RAM, rede, disco e processos com atualização contínua e precisão.</p>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-terminal"></i></div>
+          <div class="feature-content">
+            <h3>Interface TUI Moderna</h3>
+            <p>Terminal User Interface com gráficos intuitivos e navegação por teclado.</p>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-globe"></i></div>
+          <div class="feature-content">
+            <h3>Dashboard Web</h3>
+            <p>Painel Web responsivo acessível de qualquer dispositivo na rede.</p>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-database"></i></div>
+          <div class="feature-content">
+            <h3>Histórico Persistente</h3>
+            <p>Armazenamento local de métricas por 24h usando SQLite.</p>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+          <div class="feature-content">
+            <h3>Gestão de Processos</h3>
+            <p>Filtro, ordenação e encerramento de processos com confirmação.</p>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-info-circle"></i></div>
+          <div class="feature-content">
+            <h3>Informações do Sistema</h3>
+            <p>IP público, ping e detalhes da placa-mãe diretamente na interface.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Atalhos -->
+    <section id="shortcuts">
+      <h2 class="section-title">Atalhos de Teclado</h2>
+      <table class="shortcuts-table">
+        <thead>
+          <tr>
+            <th>Tecla</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Q</code></td>
+            <td>Sair do Batedor</td>
+          </tr>
+          <tr>
+            <td><code>C</code></td>
+            <td>Ordenar processos por uso de CPU</td>
+          </tr>
+          <tr>
+            <td><code>M</code></td>
+            <td>Ordenar processos por uso de Memória</td>
+          </tr>
+          <tr>
+            <td><code>P</code></td>
+            <td>Ordenar processos por PID</td>
+          </tr>
+          <tr>
+            <td><code>K</code></td>
+            <td>Encerrar processo selecionado</td>
+          </tr>
+          <tr>
+            <td><code>H</code></td>
+            <td>Alternar visão de histórico</td>
+          </tr>
+          <tr>
+            <td><code>F1</code></td>
+            <td>Exibir ajuda</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    
+    <!-- Segurança -->
+    <section id="security">
+      <h2 class="section-title">Segurança e Privacidade</h2>
+      <p>O Batedor foi desenvolvido com foco em segurança e privacidade dos dados:</p>
+      
+      <div class="security-features">
+        <div class="security-card">
+          <div class="security-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Execução Segura</h3>
+          <p>Recomendado executar como root para acesso completo às métricas do sistema.</p>
+        </div>
+        
+        <div class="security-card">
+          <div class="security-icon"><i class="fas fa-lock"></i></div>
+          <h3>Privacidade Garantida</h3>
+          <p>Nenhum dado é enviado para servidores externos - tudo fica local.</p>
+        </div>
+        
+        <div class="security-card">
+          <div class="security-icon"><i class="fas fa-database"></i></div>
+          <h3>Armazenamento Local</h3>
+          <p>Histórico armazenado apenas no banco SQLite local.</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Doação -->
+    <section id="donation">
+      <div class="donation">
+        <h3>❤️ Apoie Este Projeto</h3>
+        <p>O Batedor é desenvolvido de forma independente e de código aberto. Se o projeto te ajudou, considere apoiar para que continue evoluindo.</p>
+        
+        <div class="pix-code">
+          poupanca@henriquetourinho.com.br
+        </div>
+        
+        <p>Qualquer valor é bem-vindo e muito apreciado!</p>
+        
+        <a href="#" class="donation-btn">
+          <i class="fas fa-heart"></i> Doar via PIX
+        </a>
+      </div>
+    </section>
+    
+
+  </div>
+  
+  <!-- Rodapé -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://github.com/henriquetourinho/batedor" target="_blank">GitHub</a>
+      <a href="https://br.linkedin.com/in/carloshenriquetourinhosantana" target="_blank">LinkedIn</a>
+      <a href="https://wiki.debian.org/henriquetourinho" target="_blank">Debian Wiki</a>
+    </div>
+    
+    <p class="license">Licença GPL-3.0 &copy; 2023 Carlos Henrique Tourinho Santana</p>
+  </footer>
+</body>
+</html>

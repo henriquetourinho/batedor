@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batedor - Web Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #1a1b26;
+            --fg-color: #c0caf5;
+            --border-color: #414868;
+            --green: #9ece6a;
+            --cyan: #7dcfff;
+            --yellow: #e0af68;
+            --red: #f7768e;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--fg-color);
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 0;
+            padding: 1rem;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto 1fr;
+            gap: 1rem;
+            height: calc(100vh - 2rem);
+        }
+        .box {
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-y: auto;
+        }
+        .box-title {
+            font-weight: bold;
+            color: var(--yellow);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .full-width { grid-column: 1 / -1; }
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            border-radius: 5px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--green);
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: var(--bg-color);
+        }
+        #cpu-cores { list-style-type: none; padding: 0; margin: 0; }
+        #proc-table { width: 100%; border-collapse: collapse; }
+        #proc-table th, #proc-table td { text-align: left; padding: 4px; }
+        #proc-table th { color: var(--yellow); }
+        #proc-table tbody tr:nth-child(odd) { background-color: #24283b; }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <div class="box" id="cpu-box">
+        <div class="box-title">Uso de CPU</div>
+        <ul id="cpu-cores"></ul>
+    </div>
+
+    <div class="box" id="mem-box">
+        <div class="box-title">Uso de Memória</div>
+        <div class="progress-bar-container">
+            <div id="mem-bar" class="progress-bar" style="width: 0%;">0%</div>
+        </div>
+    </div>
+
+    <div class="box" id="net-box">
+        <div class="box-title">Rede</div>
+        <div>Down: <span id="net-down">...</span></div>
+        <div>Up: <span id="net-up">...</span></div>
+        <div>Ping: <span id="net-ping">...</span></div>
+        <div>IP Público: <span id="net-public-ip">...</span></div>
+    </div>
+    
+    <div class="box full-width" id="proc-box">
+        <div class="box-title">Processos</div>
+        <table id="proc-table">
+            <thead>
+                <tr><th>PID</th><th>Usuário</th><th>CPU%</th><th>MEM%</th><th>Comando</th></tr>
+            </thead>
+            <tbody id="proc-table-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const socket = new WebSocket("ws://" + window.location.host + "/ws");
+
+    socket.onopen = function(e) {
+        console.log("[open] Conexão estabelecida");
+    };
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        updateUI(data);
+    };
+
+    socket.onclose = function(event) {
+        console.log(`[close] Conexão fechada, código=${event.code} motivo=${event.reason}`);
+    };
+
+    socket.onerror = function(error) {
+        console.log(`[error] ${error.message}`);
+    };
+
+    function updateUI(data) {
+        // Atualiza CPU
+        const cpuCoresEl = document.getElementById('cpu-cores');
+        cpuCoresEl.innerHTML = '';
+        data.CPU.Cores.forEach((coreUsage, i) => {
+            const li = document.createElement('li');
+            li.textContent = `Núcleo ${i}: ${coreUsage.toFixed(1)}%`;
+            cpuCoresEl.appendChild(li);
+        });
+
+        // Atualiza Memória
+        const memBarEl = document.getElementById('mem-bar');
+        memBarEl.style.width = data.Mem.UsedPercent.toFixed(1) + '%';
+        memBarEl.style.backgroundColor = 'var(--cyan)';
+        memBarEl.textContent = data.Mem.UsedPercent.toFixed(1) + '%';
+        
+        // Atualiza Rede
+        document.getElementById('net-down').textContent = data.Net.DownloadRate;
+        document.getElementById('net-up').textContent = data.Net.UploadRate;
+        document.getElementById('net-ping').textContent = data.Net.Latency + 'ms';
+        document.getElementById('net-public-ip').textContent = data.Net.PublicIP;
+
+        // Atualiza Processos
+        const procTableBodyEl = document.getElementById('proc-table-body');
+        procTableBodyEl.innerHTML = '';
+        data.Procs.forEach(proc => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${proc.PID}</td>
+                <td>${proc.User}</td>
+                <td>${proc.CPU.toFixed(2)}</td>
+                <td>${proc.Mem.toFixed(2)}</td>
+                <td>${proc.Command}</td>
+            `;
+            procTableBodyEl.appendChild(row);
+        });
+    }
+</script>
+
+</body>
+</html>
